@@ -27,28 +27,10 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 movement = Vector3.zero;
 
-        if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            movement.x -= movementSpeed;
+        movement.x += Input.GetAxis("Horizontal");
+        movement.y += Input.GetAxis("Vertical");
 
-        }
-        if (Input.GetKey(KeyCode.RightArrow))
-        {
-            movement.x += movementSpeed;
-
-        }
-        if (Input.GetKey(KeyCode.UpArrow))
-        {
-            movement.y += movementSpeed;
-
-        }
-        if (Input.GetKey(KeyCode.DownArrow))
-        {
-            movement.y -= movementSpeed;
-
-        }
-
-        _controller.move(movement * Time.deltaTime);
+        _controller.move(movement * Time.deltaTime * movementSpeed);
     }
 
 
