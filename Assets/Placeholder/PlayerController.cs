@@ -25,6 +25,9 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        float attacking = Input.GetAxis("Fire1");
+        if (attacking > 0)
+            Debug.Log("PeW!");
         Vector3 movement = Vector3.zero;
 
         movement.x += Input.GetAxis("Horizontal");
