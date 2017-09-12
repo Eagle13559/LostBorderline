@@ -32,8 +32,14 @@ public class PlayerController : MonoBehaviour
     private float _dashTime = 0.25f;
     // How long the player has been dashing for after activating a dash
     private float _dashTimer = 0f;
+    // The amount of time an attack takes and the collider is active
+    private float _attackTime = 0.1f;
+    // How long the player has been attacking for after activating attack
+    private float _attackTimer = 0f;
     [SerializeField]
     private float _dashSpeed = 12.5f;
+    [SerializeField]
+    private BoxCollider2D _attackCollider;
 
     private enum playerState
     {
@@ -54,6 +60,9 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         _controller = gameObject.GetComponent<CharacterController2D>();
+        _attackCollider = GameObject.Find("PlayerAttackCollider").GetComponent<BoxCollider2D>();
+        _attackCollider.enabled = false;
+        _playerDirection = new Vector3(1,0,0);
     }
 
     // Update is called once per frame
@@ -62,18 +71,36 @@ public class PlayerController : MonoBehaviour
         float shoot = Input.GetAxis("Fire1");
         float aim = Input.GetAxis("Fire2");
         bool dash = Input.GetButton("Dash");
+        bool melee = Input.GetButton("Melee");
 
         if (_currentState == playerState.FREE)
         {
-            if (Input.GetButton("Dash"))
+            if (dash)
                 _currentState = playerState.DASHING;
+            else if (melee)
+                _currentState = playerState.ATTACKING;
             else if (aim > 0)
                 _currentState = playerState.SHOOTING;
         }
         else if (aim == 0 && _currentState == playerState.SHOOTING)
             _currentState = playerState.FREE;
 
-        if (_currentState == playerState.DASHING)
+        if (_currentState == playerState.ATTACKING)
+        {
+            if (_attackTimer < _attackTime)
+            {
+                _attackTimer += Time.deltaTime;
+                _attackCollider.enabled = true;
+                //Debug.Log("SMACK");
+            }
+            else
+            {
+                _attackCollider.enabled = false;
+                _currentState = playerState.FREE;
+                _attackTimer = 0f;
+            }
+        }
+        else if (_currentState == playerState.DASHING)
         {
             if (_dashTimer < _dashTime)
             {
@@ -106,7 +133,10 @@ public class PlayerController : MonoBehaviour
 
         // If the player is changing directions, remember which way they ended up facing
         if (playerInputDirection.x != 0 || playerInputDirection.y != 0)
+        {
             _playerDirection = playerInputDirection;
+            //transform.RotateAround(new Vector3(1,0,0), new Vector3(0,0,1), Vector3.Angle(new Vector3(1, 0, 0), _playerDirection));
+        }
 
         // If shooting, the player doesn't move
         if (_currentState != playerState.SHOOTING)
