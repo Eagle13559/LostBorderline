@@ -22,55 +22,94 @@ public class PlayerController : MonoBehaviour
     // Used when figuring out hip fire direction, also changed with movement stick while in shoot mode
     private Vector3 _playerDirection;
     // True while player is holding left trigger, disables movement
-    private bool _isShooting;
+    private bool _isShooting = false;
+    // True for a time after pressing A, disables shooting
+    private bool _isDashing = false;
     // Performs movement and collision so we don't have to think about it
     private CharacterController2D _controller;
-    private bool _triggerHasBeenReleased;
+    private bool _triggerHasBeenReleased = true;
+    // The amount of time a dash takes
+    private float _dashTime = 0.25f;
+    // How long the player has been dashing for after activating a dash
+    private float _dashTimer = 0f;
+    [SerializeField]
+    private float _dashSpeed = 12.5f;
+
+    private enum playerState
+    {
+        TAKINGDAMAGE,
+        DASHING,
+        ATTACKING,
+        LANDING,
+        FREE,
+        DEAD,
+        WINNING,
+        SHOOTING
+    }
+    // The player can only be doing one thing at once
+    private playerState _currentState = playerState.FREE;
 
 
     // Use this for initialization
     void Start()
     {
         _controller = gameObject.GetComponent<CharacterController2D>();
-        _isShooting = false;
-        _triggerHasBeenReleased = true;
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Check for player aiming
+        float shoot = Input.GetAxis("Fire1");
         float aim = Input.GetAxis("Fire2");
-        if (aim > 0)
+        bool dash = Input.GetButton("Dash");
+
+        if (_currentState == playerState.FREE)
         {
-            _isShooting = true;
+            if (Input.GetButton("Dash"))
+                _currentState = playerState.DASHING;
+            else if (aim > 0)
+                _currentState = playerState.SHOOTING;
         }
-        else
+        else if (aim == 0 && _currentState == playerState.SHOOTING)
+            _currentState = playerState.FREE;
+
+        if (_currentState == playerState.DASHING)
         {
-            _isShooting = false;
+            if (_dashTimer < _dashTime)
+            {
+                _dashTimer += Time.deltaTime;
+                _controller.move(_playerDirection * Time.deltaTime * _dashSpeed);
+
+                // No more actions possible while dashing
+                return;
+            }
+            else
+            {
+                _currentState = playerState.FREE;
+                _dashTimer = 0f;
+            }
         }
-        // Check for player shooting (Check Axis not Button for robustness between systems)
-        float fire = Input.GetAxis("Fire1");
-        if (fire > 0 && _triggerHasBeenReleased)
-        {
-            _triggerHasBeenReleased = false;
-            GameObject bullet = Instantiate(_bullet, gameObject.transform.position, Quaternion.identity);
-            bullet.GetComponent<BulletController>()._direction = Vector3.Normalize(_playerDirection);
-        }
-        else if (fire == 0)
-            _triggerHasBeenReleased = true;
 
         Vector3 playerInputDirection = Vector3.zero;
 
         playerInputDirection.x += Input.GetAxis("Horizontal");
         playerInputDirection.y += Input.GetAxis("Vertical");
 
+        if (shoot > 0 && _triggerHasBeenReleased)
+        {
+            _triggerHasBeenReleased = false;
+            GameObject bullet = Instantiate(_bullet, gameObject.transform.position, Quaternion.identity);
+            bullet.GetComponent<BulletController>()._direction = Vector3.Normalize(_playerDirection);
+        }
+        else if (shoot == 0)
+            _triggerHasBeenReleased = true;
+
         // If the player is changing directions, remember which way they ended up facing
         if (playerInputDirection.x != 0 || playerInputDirection.y != 0)
             _playerDirection = playerInputDirection;
 
-        // If the player is in shoot mode, don't perform the move
-        if (!_isShooting)
+        // If shooting, the player doesn't move
+        if (_currentState != playerState.SHOOTING)
             _controller.move(playerInputDirection * Time.deltaTime * _movementSpeed);
 
         DrawLine(gameObject.transform.position, gameObject.transform.position + _playerDirection, Color.red, 0.05f);
