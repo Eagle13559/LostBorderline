@@ -44,6 +44,9 @@ public class PlayerController : MonoBehaviour
     private float _dashSpeed = 12.5f;
     [SerializeField]
     private BoxCollider2D _attackCollider;
+    private int _playerHealth = 100;
+    [SerializeField]
+    private int _bulletDamage = 10;
 
     private enum playerState
     {
@@ -129,7 +132,7 @@ public class PlayerController : MonoBehaviour
         if (shoot > 0 && _triggerHasBeenReleased)
         {
             _triggerHasBeenReleased = false;
-            GameObject bullet = Instantiate(_bullet, gameObject.transform.position, Quaternion.identity);
+            GameObject bullet = Instantiate(_bullet, gameObject.transform.position + Vector3.Normalize(_playerDirection), Quaternion.identity);
             bullet.GetComponent<BulletController>()._direction = Vector3.Normalize(_playerDirection);
         }
         else if (shoot == 0)
@@ -147,6 +150,7 @@ public class PlayerController : MonoBehaviour
             _controller.move(playerInputDirection * Time.deltaTime * _movementSpeed);
 
         DrawLine(gameObject.transform.position, gameObject.transform.position + _playerDirection, Color.red, 0.05f);
+        DrawHealthBar();
     }
 
 
@@ -168,6 +172,21 @@ public class PlayerController : MonoBehaviour
         {
             gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationDownY);
         }
+        else if (other.tag == "Bullet")
+        {
+            Destroy(other.gameObject);
+            _playerHealth -= _bulletDamage;
+            if (_playerHealth == 0)
+                _currentState = playerState.DEAD;
+        }
+    }
+
+    void DrawHealthBar()
+    {
+        Vector3 healthBarStart = new Vector3(-8,4,0);
+        int healthBarLength = 5;
+        Vector3 healthBarEnd = new Vector3(healthBarStart.x+healthBarLength * _playerHealth / 100f, healthBarStart.y, healthBarStart.z);
+        DrawLine(healthBarStart, healthBarEnd , Color.red);
     }
 
     void DrawLine(Vector3 start, Vector3 end, Color color, float duration = 0.2f)

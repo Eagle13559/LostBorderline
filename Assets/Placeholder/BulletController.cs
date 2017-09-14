@@ -13,6 +13,13 @@ public class BulletController : MonoBehaviour {
     // Where to go when the player has walked off the right side of the map
     [SerializeField]
     private float _warpLocationLeftX = -10;
+    [SerializeField]
+    private float _warpLocationUpY = 6;
+    [SerializeField]
+    private float _warpLocationDownY = -6;
+    [SerializeField]
+    private float _timer = 5f;
+    private float _timeAlive = 0f;
 
     // Use this for initialization
     void Start () {
@@ -22,6 +29,9 @@ public class BulletController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         transform.Translate(_direction * Time.deltaTime * _speed);
+        _timeAlive += Time.deltaTime;
+        if (_timeAlive > _timer)
+            Destroy(gameObject);
 	}
 
     void OnTriggerEnter2D(Collider2D other)
@@ -37,6 +47,16 @@ public class BulletController : MonoBehaviour {
         else if (other.tag == "LevelWrapperL")
         {
             gameObject.transform.position = new Vector3(_warpLocationRightX, gameObject.transform.position.y);
+        }
+        else if (other.tag == "LevelWrapperD")
+        {
+            Debug.Log("COLLIDE D");
+            gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationUpY);
+        }
+        else if (other.tag == "LevelWrapperU")
+        {
+            Debug.Log("COLLIDE U");
+            gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationDownY);
         }
     }
 }
