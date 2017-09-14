@@ -11,6 +11,10 @@ public class PlayerController : MonoBehaviour
     // Where to go when the player has walked off the right side of the map
     [SerializeField]
     private float _warpLocationLeftX = -10;
+    [SerializeField]
+    private float _warpLocationUpY = 7f;
+    [SerializeField]
+    private float _warpLocationDownY = -7f;
     // How quickly the player moves while walking
     [SerializeField]
     private float _movementSpeed = 5;
@@ -155,6 +159,14 @@ public class PlayerController : MonoBehaviour
         else if (other.tag == "LevelWrapperL")
         {
             gameObject.transform.position = new Vector3(_warpLocationRightX, gameObject.transform.position.y);
+        }
+        else if (other.tag == "LevelWrapperD")
+        {
+            gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationUpY);
+        }
+        else if (other.tag == "LevelWrapperU")
+        {
+            gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationDownY);
         }
     }
 
