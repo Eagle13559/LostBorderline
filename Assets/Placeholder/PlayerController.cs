@@ -42,7 +42,6 @@ public class PlayerController : MonoBehaviour
     private float _attackTimer = 0f;
     [SerializeField]
     private float _dashSpeed = 12.5f;
-    [SerializeField]
     private BoxCollider2D _attackCollider;
     private int _playerHealth = 100;
     [SerializeField]
@@ -128,12 +127,13 @@ public class PlayerController : MonoBehaviour
 
         playerInputDirection.x += Input.GetAxis("Horizontal");
         playerInputDirection.y += Input.GetAxis("Vertical");
+        Vector3.Normalize(_playerDirection);
 
         if (shoot > 0 && _triggerHasBeenReleased)
         {
             _triggerHasBeenReleased = false;
-            GameObject bullet = Instantiate(_bullet, gameObject.transform.position + Vector3.Normalize(_playerDirection), Quaternion.identity);
-            bullet.GetComponent<BulletController>()._direction = Vector3.Normalize(_playerDirection);
+            GameObject bullet = Instantiate(_bullet, gameObject.transform.position + _playerDirection, Quaternion.identity);
+            bullet.GetComponent<BulletController>()._direction = _playerDirection;
         }
         else if (shoot == 0)
             _triggerHasBeenReleased = true;
@@ -147,9 +147,13 @@ public class PlayerController : MonoBehaviour
 
         // If shooting, the player doesn't move
         if (_currentState != playerState.SHOOTING)
-            _controller.move(playerInputDirection * Time.deltaTime * _movementSpeed);
-
-        DrawLine(gameObject.transform.position, gameObject.transform.position + _playerDirection, Color.red, 0.05f);
+        {
+            Vector3 movementAxis = SnapToNearestMovementAxis(playerInputDirection);
+            _controller.move(SnapToNearestMovementAxis(movementAxis) * Time.deltaTime * _movementSpeed);
+            DrawLine(gameObject.transform.position, gameObject.transform.position + movementAxis, Color.red, 0.05f);
+        }
+        else
+            DrawLine(gameObject.transform.position, gameObject.transform.position + playerInputDirection, Color.red, 0.05f);
         DrawHealthBar();
     }
 
@@ -179,6 +183,47 @@ public class PlayerController : MonoBehaviour
             if (_playerHealth == 0)
                 _currentState = playerState.DEAD;
         }
+    }
+
+    // The player is allowed to move in the following 8 directions:
+    //  (1,0,0)
+    //  (0.7,0.7,0)
+    //  (0,1,0)
+    //  (-0.7,0.7,0)
+    //  (-1,0,0)
+    //  (-0.7,-0.7,0)
+    //  (0,-1,0)
+    //  (0.7,-0.7,0)
+    //      NOTE: assumed input vector is normalized
+    Vector3 SnapToNearestMovementAxis(Vector3 inputDirection)
+    {
+        Vector3 returnDirection = new Vector3(0,0,0);
+
+        // Check to see if x is closer to 0, 1, or 0.7
+        if (Mathf.Abs(1f - Mathf.Abs(inputDirection.x)) < Mathf.Abs(0.7f - Mathf.Abs(inputDirection.x)))
+            returnDirection.x = 1;
+        else if ((Mathf.Abs(inputDirection.x)) < Mathf.Abs(0.7f - Mathf.Abs(inputDirection.x)))
+            returnDirection.x = 0;
+        else
+            returnDirection.x = 0.7f;
+
+        // Ensure the sign matches
+        if (inputDirection.x < 0)
+            returnDirection.x *= -1;
+
+        // Check to see if x is closer to 0, 1, or 0.7
+        if (Mathf.Abs(1f - Mathf.Abs(inputDirection.y)) < Mathf.Abs(0.7f - Mathf.Abs(inputDirection.y)))
+            returnDirection.y = 1;
+        else if ((Mathf.Abs(inputDirection.y)) < Mathf.Abs(0.7f - Mathf.Abs(inputDirection.y)))
+            returnDirection.y = 0;
+        else
+            returnDirection.y = 0.7f;
+
+        // Ensure the sign matches
+        if (inputDirection.y < 0)
+            returnDirection.y *= -1;
+
+        return returnDirection;
     }
 
     void DrawHealthBar()

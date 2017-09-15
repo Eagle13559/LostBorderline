@@ -50,12 +50,10 @@ public class BulletController : MonoBehaviour {
         }
         else if (other.tag == "LevelWrapperD")
         {
-            Debug.Log("COLLIDE D");
             gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationUpY);
         }
         else if (other.tag == "LevelWrapperU")
         {
-            Debug.Log("COLLIDE U");
             gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationDownY);
         }
     }
