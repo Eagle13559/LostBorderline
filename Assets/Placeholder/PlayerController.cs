@@ -5,6 +5,12 @@ using Prime31;
 
 public class PlayerController : MonoBehaviour
 {
+    // Use so the player can hoild down dash button.
+    [SerializeField]
+    private bool canDash = true;
+    // Used to create the dash bar
+    [SerializeField]
+    private float dashTime = 0;
     // Where to go when the player has walked off the left side of the map
     [SerializeField]
     private float _warpLocationRightX = 10;
@@ -108,7 +114,9 @@ public class PlayerController : MonoBehaviour
         }
         else if (_currentState == playerState.DASHING)
         {
-            if (_dashTimer < _dashTime)
+            dashTime = 0;
+            canDash = false;
+            if ((_dashTimer < _dashTime) && canDash)
             {
                 _dashTimer += Time.deltaTime;
                 _controller.move(_playerDirection * Time.deltaTime * _dashSpeed);
@@ -154,7 +162,20 @@ public class PlayerController : MonoBehaviour
         }
         else
             DrawLine(gameObject.transform.position, gameObject.transform.position + playerInputDirection, Color.red, 0.05f);
+
+        if(dashTime < 2f)
+        {
+            canDash = false;
+            dashTime += Time.deltaTime;
+            DrawDashBar(dashTime);
+        }
+        else if(dashTime > 2f)
+        {
+            canDash = true;
+            DrawDashBar(dashTime);
+        }
         DrawHealthBar();
+        
     }
 
 
@@ -232,6 +253,14 @@ public class PlayerController : MonoBehaviour
         int healthBarLength = 5;
         Vector3 healthBarEnd = new Vector3(healthBarStart.x+healthBarLength * _playerHealth / 100f, healthBarStart.y, healthBarStart.z);
         DrawLine(healthBarStart, healthBarEnd , Color.red);
+    }
+
+    void DrawDashBar(float length)
+    {
+        Vector3 DashBarStart = new Vector3(-8, 4.3f, 0);
+        float DashBarLength = length;
+        Vector3 DashBarEnd = new Vector3(DashBarStart.x + (length) , DashBarStart.y, DashBarStart.z);
+        DrawLine(DashBarStart, DashBarEnd, Color.cyan);
     }
 
     void DrawLine(Vector3 start, Vector3 end, Color color, float duration = 0.2f)
