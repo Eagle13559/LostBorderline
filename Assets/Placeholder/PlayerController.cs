@@ -5,6 +5,7 @@ using Prime31;
 
 public class PlayerController : MonoBehaviour
 {
+    public int damage = 1;
     // Use so the player can hoild down dash button.
     private bool canDash = true;
     // Used to create the dash bar
@@ -42,6 +43,7 @@ public class PlayerController : MonoBehaviour
     private float _dashTimer = 0f;
     // The amount of time an attack takes and the collider is active
     private float _attackTime = 0.1f;
+    private float _chargedAttackTime = 0.5f;
     // How long the player has been attacking for after activating attack
     private float _attackTimer = 0f;
     [SerializeField]
@@ -50,6 +52,11 @@ public class PlayerController : MonoBehaviour
     private int _playerHealth = 100;
     [SerializeField]
     private int _bulletDamage = 10;
+    private float _meleeCharge = 0;
+    [SerializeField]
+    private float _meleeChargeTime = 0.5f;
+    [SerializeField]
+    private float _meleeChargePauseTime = 0.15f;
 
     private enum playerState
     {
@@ -60,7 +67,8 @@ public class PlayerController : MonoBehaviour
         FREE,
         DEAD,
         WINNING,
-        SHOOTING
+        SHOOTING,
+        CHARGEDMELEE
     }
     // The player can only be doing one thing at once
     private playerState _currentState = playerState.FREE;
@@ -85,7 +93,16 @@ public class PlayerController : MonoBehaviour
 
         // TODO: this is hack, it appears when A is pressed it shoots AND dashes, need to investigate
         if (dash) shoot = 0;
-        if (melee) aim = 0;
+        if (melee) { aim = 0; _meleeCharge += Time.deltaTime; Debug.Log(_meleeCharge); }
+        else _meleeCharge = 0;
+
+        if (_meleeCharge > _meleeChargeTime)
+        {
+            _currentState = playerState.CHARGEDMELEE;
+            _meleeCharge = 0;
+        }
+        else if (_meleeCharge > _meleeChargePauseTime)
+            return;
 
         if (_currentState == playerState.FREE)
         {
@@ -99,7 +116,25 @@ public class PlayerController : MonoBehaviour
         else if (aim == 0 && _currentState == playerState.SHOOTING)
             _currentState = playerState.FREE;
 
-        if (_currentState == playerState.ATTACKING)
+        if (_currentState == playerState.CHARGEDMELEE)
+        {
+            if (_attackTimer < _chargedAttackTime)
+            {
+                _attackTimer += Time.deltaTime;
+                _attackCollider.enabled = true;
+                damage = 5;
+                return;
+            }
+            else
+            {
+                _attackCollider.enabled = false;
+                _currentState = playerState.FREE;
+                _attackTimer = 0f;
+                damage = 1;
+                _meleeCharge = 0;
+            }
+        }
+        else if (_currentState == playerState.ATTACKING)
         {
             if (_attackTimer < _attackTime)
             {
