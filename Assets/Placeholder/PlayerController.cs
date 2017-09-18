@@ -6,10 +6,8 @@ using Prime31;
 public class PlayerController : MonoBehaviour
 {
     // Use so the player can hoild down dash button.
-    [SerializeField]
     private bool canDash = true;
     // Used to create the dash bar
-    [SerializeField]
     private float dashTime = 0;
     // Where to go when the player has walked off the left side of the map
     [SerializeField]
@@ -85,9 +83,14 @@ public class PlayerController : MonoBehaviour
         bool dash = Input.GetButton("Dash");
         bool melee = Input.GetButton("Melee");
 
+        Debug.Log(shoot + "," + aim + "," + dash + "," + melee);
+        // TODO: this is hack, it appears when A is pressed it shoots AND dashes, need to investigate
+        if (dash) shoot = 0;
+        if (melee) aim = 0;
+
         if (_currentState == playerState.FREE)
         {
-            if (dash)
+            if (dash && canDash)
                 _currentState = playerState.DASHING;
             else if (melee)
                 _currentState = playerState.ATTACKING;
@@ -116,7 +119,7 @@ public class PlayerController : MonoBehaviour
         {
             dashTime = 0;
             canDash = false;
-            if ((_dashTimer < _dashTime) && canDash)
+            if ((_dashTimer < _dashTime))
             {
                 _dashTimer += Time.deltaTime;
                 _controller.move(_playerDirection * Time.deltaTime * _dashSpeed);
