@@ -158,6 +158,7 @@ public class PlayerController : MonoBehaviour
         {
             Vector3 movementAxis = SnapToNearestMovementAxis(playerInputDirection);
             _controller.move(SnapToNearestMovementAxis(movementAxis) * Time.deltaTime * _movementSpeed);
+            _attackCollider.gameObject.transform.position = gameObject.transform.position + movementAxis;
             DrawLine(gameObject.transform.position, gameObject.transform.position + movementAxis, Color.red, 0.05f);
         }
         else
