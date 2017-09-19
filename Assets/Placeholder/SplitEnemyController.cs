@@ -95,7 +95,7 @@ public class SplitEnemyController : MonoBehaviour {
         {
             if (_smallerGuys != null)
             {
-                for (int i = 0; i < 8; ++i)
+                for (int i = 0; i < 3; ++i)
                 {
                     Vector3 position = new Vector3(Random.Range(-10.0f, 10.0f), Random.Range(-10.0f, 10.0f), 0);
                     Debug.Log(position);
