@@ -28,6 +28,8 @@ public class SplitEnemyController : MonoBehaviour {
     private SpriteRenderer _sprite;
     [SerializeField]
     private GameObject _smallerGuys;
+    [SerializeField]
+    private GameObject _ammoDrop;
 
     // Use this for initialization
     void Start () {
@@ -102,7 +104,14 @@ public class SplitEnemyController : MonoBehaviour {
                     Instantiate(_smallerGuys, gameObject.transform.position + position, Quaternion.identity);
                 }
             }
+            Vector3 t = gameObject.transform.position;
             Destroy(gameObject);
+            // ammo drop is 25%
+            int dropChance = Random.Range(1, 5); // random integer from 1 to 4
+            if (dropChance == 1)
+            {
+                Instantiate(_ammoDrop, t, Quaternion.identity);
+            }
         }
     }
 }

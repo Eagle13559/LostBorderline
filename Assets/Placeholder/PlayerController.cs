@@ -51,6 +51,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private BoxCollider2D _attackCollider;
     private int _playerHealth = 100;
+    [SerializeField]
     private int _ammo = 100;
     public int bulletDamage = 1;
     private float _meleeCharge = 0;
@@ -284,7 +285,13 @@ public class PlayerController : MonoBehaviour
             if (_playerHealth <= 0)
                 _currentState = playerState.DEAD;
         }
-
+        else if (other.tag == "Ammo")
+        {
+            Debug.Log("Hi I'm some ammo");
+            Destroy(other.gameObject);
+            _ammo += 15;
+            if (_ammo > 100) _ammo = 100;
+        }
     }
 
     // The player is allowed to move in the following 8 directions:
