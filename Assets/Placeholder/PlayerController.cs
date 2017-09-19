@@ -48,15 +48,23 @@ public class PlayerController : MonoBehaviour
     private float _attackTimer = 0f;
     [SerializeField]
     private float _dashSpeed = 12.5f;
+    [SerializeField]
     private BoxCollider2D _attackCollider;
     private int _playerHealth = 100;
-    [SerializeField]
-    private int _bulletDamage = 10;
+    public int bulletDamage = 1;
     private float _meleeCharge = 0;
     [SerializeField]
     private float _meleeChargeTime = 0.5f;
     [SerializeField]
     private float _meleeChargePauseTime = 0.15f;
+    [SerializeField]
+    private int _enemyDamage = 5;
+    private float _damageTime = 0.5f;
+    private float _damageTimer = 0;
+    [SerializeField]
+    private float _damageSpeed = 10f;
+    private bool _isTakingDamage = false;
+    private SpriteRenderer _sprite;
 
     private enum playerState
     {
@@ -78,9 +86,9 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         _controller = gameObject.GetComponent<CharacterController2D>();
-        _attackCollider = GameObject.Find("PlayerAttackCollider").GetComponent<BoxCollider2D>();
         _attackCollider.enabled = false;
         _playerDirection = new Vector3(1,0,0);
+        _sprite = gameObject.GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per frame
@@ -91,9 +99,21 @@ public class PlayerController : MonoBehaviour
         bool dash = Input.GetButton("Dash");
         bool melee = Input.GetButton("Melee");
 
+        if (_isTakingDamage)
+        {
+            _damageTimer += Time.deltaTime;
+            _sprite.enabled = !_sprite.enabled;
+            if (_damageTimer >= _damageTime)
+            {
+                _isTakingDamage = false;
+                _damageTimer = 0;
+                _sprite.enabled = true;
+            }
+        }
+
         // TODO: this is hack, it appears when A is pressed it shoots AND dashes, need to investigate
         if (dash) shoot = 0;
-        if (melee) { aim = 0; _meleeCharge += Time.deltaTime; Debug.Log(_meleeCharge); }
+        if (melee) { aim = 0; _meleeCharge += Time.deltaTime; }
         else _meleeCharge = 0;
 
         if (_meleeCharge > _meleeChargeTime)
@@ -172,7 +192,7 @@ public class PlayerController : MonoBehaviour
 
         playerInputDirection.x += Input.GetAxis("Horizontal");
         playerInputDirection.y += Input.GetAxis("Vertical");
-        Vector3.Normalize(_playerDirection);
+        playerInputDirection = Vector3.Normalize(playerInputDirection);
 
         if (shoot > 0 && _triggerHasBeenReleased)
         {
@@ -194,7 +214,10 @@ public class PlayerController : MonoBehaviour
         if (_currentState != playerState.SHOOTING)
         {
             Vector3 movementAxis = SnapToNearestMovementAxis(playerInputDirection);
-            _controller.move(SnapToNearestMovementAxis(movementAxis) * Time.deltaTime * _movementSpeed);
+            if (!_isTakingDamage)
+                _controller.move(SnapToNearestMovementAxis(movementAxis) * Time.deltaTime * _movementSpeed);
+            else
+                _controller.move(SnapToNearestMovementAxis(movementAxis) * Time.deltaTime * _damageSpeed);
             _attackCollider.gameObject.transform.position = gameObject.transform.position + movementAxis;
             DrawLine(gameObject.transform.position, gameObject.transform.position + movementAxis, Color.red, 0.05f);
         }
@@ -215,7 +238,6 @@ public class PlayerController : MonoBehaviour
         DrawHealthBar();
         
     }
-
 
     void OnTriggerEnter2D(Collider2D other)
     {
@@ -238,10 +260,20 @@ public class PlayerController : MonoBehaviour
         else if (other.tag == "Bullet")
         {
             Destroy(other.gameObject);
-            _playerHealth -= _bulletDamage;
-            if (_playerHealth == 0)
+            _playerHealth -= bulletDamage;
+            _isTakingDamage = true;
+            if (_playerHealth <= 0)
+                _currentState = playerState.DEAD;
+            
+        }
+        else if (other.tag == "Enemy")
+        {
+            _playerHealth -= _enemyDamage;
+            _isTakingDamage = true;
+            if (_playerHealth <= 0)
                 _currentState = playerState.DEAD;
         }
+
     }
 
     // The player is allowed to move in the following 8 directions:
