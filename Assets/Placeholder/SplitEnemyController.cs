@@ -97,10 +97,10 @@ public class SplitEnemyController : MonoBehaviour {
             {
                 for (int i = 0; i < 8; ++i)
                 {
-                    Vector3 position = new Vector3(Random.Range(-10.0f, 10.0f), 0, Random.Range(-10.0f, 10.0f));
+                    Vector3 position = new Vector3(Random.Range(-10.0f, 10.0f), Random.Range(-10.0f, 10.0f), 0);
                     Debug.Log(position);
                     position = Vector3.Normalize(position);
-                    position *= 3;
+                    position *= 2;
                     Instantiate(_smallerGuys, gameObject.transform.position + position, Quaternion.identity);
                 }
             }
