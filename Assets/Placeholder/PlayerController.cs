@@ -51,6 +51,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private BoxCollider2D _attackCollider;
     private int _playerHealth = 100;
+    private int _ammo = 100;
     public int bulletDamage = 1;
     private float _meleeCharge = 0;
     [SerializeField]
@@ -194,8 +195,10 @@ public class PlayerController : MonoBehaviour
         playerInputDirection.y += Input.GetAxis("Vertical");
         playerInputDirection = Vector3.Normalize(playerInputDirection);
 
-        if (shoot > 0 && _triggerHasBeenReleased)
+        // Shooting
+        if (shoot > 0 && _triggerHasBeenReleased && _ammo > 0)
         {
+            _ammo--;
             _triggerHasBeenReleased = false;
             GameObject bullet = Instantiate(_bullet, gameObject.transform.position + _playerDirection, Quaternion.identity);
             bullet.GetComponent<BulletController>()._direction = _playerDirection;
@@ -236,7 +239,7 @@ public class PlayerController : MonoBehaviour
             DrawDashBar(dashTime);
         }
         DrawHealthBar();
-        
+        DrawAmmoBar();
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -244,18 +247,26 @@ public class PlayerController : MonoBehaviour
         if (other.tag == "LevelWrapperR")
         {
             gameObject.transform.position = new Vector3(_warpLocationLeftX, gameObject.transform.position.y);
+            _ammo += 5;
+            if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperL")
         {
             gameObject.transform.position = new Vector3(_warpLocationRightX, gameObject.transform.position.y);
+            _ammo += 5;
+            if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperD")
         {
             gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationUpY);
+            _ammo += 5;
+            if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperU")
         {
             gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationDownY);
+            _ammo += 5;
+            if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "Bullet")
         {
@@ -331,6 +342,14 @@ public class PlayerController : MonoBehaviour
         float DashBarLength = length;
         Vector3 DashBarEnd = new Vector3(DashBarStart.x + (length) , DashBarStart.y, DashBarStart.z);
         DrawLine(DashBarStart, DashBarEnd, Color.cyan);
+    }
+
+    void DrawAmmoBar()
+    {
+        Vector3 ammoBarStart = new Vector3(-8, 4.6f, 0);
+        int ammoBarLength = 5;
+        Vector3 ammoBarEnd = new Vector3(ammoBarStart.x + ammoBarLength * _ammo / 100f, ammoBarStart.y, ammoBarStart.z);
+        DrawLine(ammoBarStart, ammoBarEnd, Color.green);
     }
 
     void DrawLine(Vector3 start, Vector3 end, Color color, float duration = 0.2f)
