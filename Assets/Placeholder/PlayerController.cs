@@ -311,6 +311,8 @@ public class PlayerController : MonoBehaviour
             _lower.transform.position = new Vector3(_lower.transform.position.x, _lower.transform.position.y + 10, _lower.transform.position.z);
             _left.transform.position = new Vector3(_left.transform.position.x, _left.transform.position.y + 10, _left.transform.position.z);
             _right.transform.position = new Vector3(_right.transform.position.x, _right.transform.position.y + 10, _right.transform.position.z);
+            _warpLocationUpY += 10;
+            _warpLocationDownY += 10;
 
         }
     }
