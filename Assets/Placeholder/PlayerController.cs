@@ -5,6 +5,16 @@ using Prime31;
 
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField]
+    private GameObject _upper;
+    [SerializeField]
+    private GameObject _lower;
+    [SerializeField]
+    private GameObject _left;
+    [SerializeField]
+    private GameObject _right;
+    [SerializeField]
+    private GameObject _camera;
     public int damage = 1;
     // Use so the player can hoild down dash button.
     private bool canDash = true;
@@ -37,7 +47,6 @@ public class PlayerController : MonoBehaviour
     // Performs movement and collision so we don't have to think about it
     private CharacterController2D _controller;
     private bool _triggerHasBeenReleased = true;
-    private bool _dashReleased = true;
     // The amount of time a dash takes
     private float _dashTime = 0.25f;
     // How long the player has been dashing for after activating a dash
@@ -68,11 +77,6 @@ public class PlayerController : MonoBehaviour
     private float _damageSpeed = 10f;
     private bool _isTakingDamage = false;
     private SpriteRenderer _sprite;
-    // This is how long the player has to dash again before they miss the chaining window
-    private float _dashRepeatBuffer = 1f;
-    private bool _mustReleaseDash = false;
-    [SerializeField]
-    private float _dashRepeatBufferStartingTime = 1f;
 
     private enum playerState
     {
@@ -93,10 +97,9 @@ public class PlayerController : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        _dashRepeatBuffer = _dashRepeatBufferStartingTime;
         _controller = gameObject.GetComponent<CharacterController2D>();
         _attackCollider.enabled = false;
-        _playerDirection = new Vector3(1,0,0);
+        _playerDirection = new Vector3(1, 0, 0);
         _sprite = gameObject.GetComponent<SpriteRenderer>();
     }
 
@@ -107,10 +110,6 @@ public class PlayerController : MonoBehaviour
         float aim = Input.GetAxis("Fire2");
         bool dash = Input.GetButton("Dash");
         bool melee = Input.GetButton("Melee");
-
-        if (!dash) _mustReleaseDash = false;
-
-        //Debug.Log(shoot+ "," + aim + "," + dash + "," + melee + "," + _mustReleaseDash);
 
         if (_isTakingDamage)
         {
@@ -140,10 +139,7 @@ public class PlayerController : MonoBehaviour
         if (_currentState == playerState.FREE)
         {
             if (dash && canDash)
-            {
-                _mustReleaseDash = true;
                 _currentState = playerState.DASHING;
-            }
             else if (melee)
                 _currentState = playerState.ATTACKING;
             else if (aim > 0)
@@ -187,60 +183,20 @@ public class PlayerController : MonoBehaviour
         }
         else if (_currentState == playerState.DASHING)
         {
+            dashTime = 0;
             canDash = false;
-            
-            _dashTimer += Time.deltaTime;
-            if (_dashTimer < _dashTime)
+            if ((_dashTimer < _dashTime))
             {
+                _dashTimer += Time.deltaTime;
                 _controller.move(_playerDirection * Time.deltaTime * _dashSpeed);
-                // HACK: if the player presses dash again while dashing, stop the dash
-                if (dash && !_mustReleaseDash)
-                    _dashTimer = 100f;
+
                 // No more actions possible while dashing
                 return;
             }
             else
             {
-                if (_dashTime + _dashRepeatBuffer > _dashTimer)
-                {
-                    // If the player has tried to dash again and they still have a chance to
-                    if (dash && !_mustReleaseDash)
-                    {
-                        _dashTimer = 0f;
-                        if (_dashRepeatBuffer > 0.03f)
-                            _dashRepeatBuffer *= 0.66f;
-                        Debug.Log(_dashRepeatBuffer);
-                        // HACK: copied and pasted movement code to get it working
-                        //  The player is able to change directions before dashing again
-                        Vector3 dir = Vector3.zero;
-
-                        dir.x += Input.GetAxis("Horizontal");
-                        dir.y += Input.GetAxis("Vertical");
-                        dir = Vector3.Normalize(dir);
-                        dir = SnapToNearestMovementAxis(dir);
-
-                        // If the player is changing directions, remember which way they ended up facing
-                        if (dir.x != 0 || dir.y != 0)
-                        {
-                            _playerDirection = dir;
-                        }
-                        // END HACK
-
-                        _controller.move(_playerDirection * Time.deltaTime * _dashSpeed);
-
-                        _mustReleaseDash = true;
-
-                        // No more actions possible while dashing
-                        return;
-                    }
-                }
-                else
-                {
-                    _currentState = playerState.FREE;
-                    _dashTimer = 0f;
-                    dashTime = 0;
-                    _dashRepeatBuffer = _dashRepeatBufferStartingTime;
-                }
+                _currentState = playerState.FREE;
+                _dashTimer = 0f;
             }
         }
 
@@ -282,19 +238,19 @@ public class PlayerController : MonoBehaviour
         else
             DrawLine(gameObject.transform.position, gameObject.transform.position + playerInputDirection, Color.red, 0.05f);
 
-        if(dashTime < 2f)
+        if (dashTime < 2f)
         {
             canDash = false;
             dashTime += Time.deltaTime;
-            DrawDashBar(dashTime);
+            DrawDashBar(dashTime, _camera.transform.position.y + 4.3);
         }
-        else if(dashTime > 2f)
+        else if (dashTime > 2f)
         {
             canDash = true;
-            DrawDashBar(dashTime);
+            DrawDashBar(dashTime, _camera.transform.position.y + 4.3);
         }
-        DrawHealthBar();
-        DrawAmmoBar();
+        DrawHealthBar(_camera.transform.position.y + 4);
+        DrawAmmoBar(_camera.transform.position.y + 4.6);
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -330,7 +286,7 @@ public class PlayerController : MonoBehaviour
             _isTakingDamage = true;
             if (_playerHealth <= 0)
                 _currentState = playerState.DEAD;
-            
+
         }
         else if (other.tag == "Enemy")
         {
@@ -346,6 +302,17 @@ public class PlayerController : MonoBehaviour
             _ammo += 15;
             if (_ammo > 100) _ammo = 100;
         }
+        else if (other.tag == "Door")
+        {
+            Destroy(other.gameObject);
+
+            _camera.transform.position = new Vector3(_camera.transform.position.x, _camera.transform.position.y + 10, _camera.transform.position.z);
+            _upper.transform.position = new Vector3(_upper.transform.position.x, _upper.transform.position.y + 10, _upper.transform.position.z);
+            _lower.transform.position = new Vector3(_lower.transform.position.x, _lower.transform.position.y + 10, _lower.transform.position.z);
+            _left.transform.position = new Vector3(_left.transform.position.x, _left.transform.position.y + 10, _left.transform.position.z);
+            _right.transform.position = new Vector3(_right.transform.position.x, _right.transform.position.y + 10, _right.transform.position.z);
+
+        }
     }
 
     // The player is allowed to move in the following 8 directions:
@@ -360,7 +327,7 @@ public class PlayerController : MonoBehaviour
     //      NOTE: assumed input vector is normalized
     Vector3 SnapToNearestMovementAxis(Vector3 inputDirection)
     {
-        Vector3 returnDirection = new Vector3(0,0,0);
+        Vector3 returnDirection = new Vector3(0, 0, 0);
 
         // Check to see if x is closer to 0, 1, or 0.7
         if (Mathf.Abs(1f - Mathf.Abs(inputDirection.x)) < Mathf.Abs(0.7f - Mathf.Abs(inputDirection.x)))
@@ -389,25 +356,25 @@ public class PlayerController : MonoBehaviour
         return returnDirection;
     }
 
-    void DrawHealthBar()
+    void DrawHealthBar(double y)
     {
-        Vector3 healthBarStart = new Vector3(-8,4,0);
+        Vector3 healthBarStart = new Vector3(-8, (float)y, 0);
         int healthBarLength = 5;
-        Vector3 healthBarEnd = new Vector3(healthBarStart.x+healthBarLength * _playerHealth / 100f, healthBarStart.y, healthBarStart.z);
-        DrawLine(healthBarStart, healthBarEnd , Color.red);
+        Vector3 healthBarEnd = new Vector3(healthBarStart.x + healthBarLength * _playerHealth / 100f, healthBarStart.y, healthBarStart.z);
+        DrawLine(healthBarStart, healthBarEnd, Color.red);
     }
 
-    void DrawDashBar(float length)
+    void DrawDashBar(float length, double y)
     {
-        Vector3 DashBarStart = new Vector3(-8, 4.3f, 0);
+        Vector3 DashBarStart = new Vector3(-8, (float)y, 0);
         float DashBarLength = length;
-        Vector3 DashBarEnd = new Vector3(DashBarStart.x + (length) , DashBarStart.y, DashBarStart.z);
+        Vector3 DashBarEnd = new Vector3(DashBarStart.x + (length), DashBarStart.y, DashBarStart.z);
         DrawLine(DashBarStart, DashBarEnd, Color.cyan);
     }
 
-    void DrawAmmoBar()
+    void DrawAmmoBar(double y)
     {
-        Vector3 ammoBarStart = new Vector3(-8, 4.6f, 0);
+        Vector3 ammoBarStart = new Vector3(-8, (float)y, 0);
         int ammoBarLength = 5;
         Vector3 ammoBarEnd = new Vector3(ammoBarStart.x + ammoBarLength * _ammo / 100f, ammoBarStart.y, ammoBarStart.z);
         DrawLine(ammoBarStart, ammoBarEnd, Color.green);
