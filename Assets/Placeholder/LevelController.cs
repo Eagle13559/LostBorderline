@@ -9,20 +9,12 @@ public class LevelController : MonoBehaviour {
     GameObject _door;
     [SerializeField]
     GameObject _camera;
-    [SerializeField]
-    GameObject _player;
     private int lvlCount;
     private bool newRoom;
 	// Use this for initialization
 	void Start () {
         lvlCount = 0;
         newRoom = true;
-        GameObject.Find("SplitEnemy3.1").SetActive(false);
-        GameObject.Find("SplitEnemy3.2").SetActive(false);
-        GameObject.Find("SplitEnemy3.3").SetActive(false);
-        GameObject.Find("SplitEnemy3.4").SetActive(false);
-        GameObject.Find("SplitEnemy2.1").SetActive(false);
-        GameObject.Find("SplitEnemy2.2").SetActive(false);
     }
 	
 	// Update is called once per frame
@@ -42,7 +34,6 @@ public class LevelController : MonoBehaviour {
                     }
 
                 }
-                GameObject.Destroy(_door);
                 break;
             case 1:
                 if(newRoom)
@@ -64,7 +55,6 @@ public class LevelController : MonoBehaviour {
                     }
 
                 }
-                GameObject.Destroy(_door);
                 break;
             case 2:
                 if(newRoom)
@@ -88,7 +78,6 @@ public class LevelController : MonoBehaviour {
                     }
 
                 }
-                GameObject.Destroy(_door);
                 break;
 
         }
