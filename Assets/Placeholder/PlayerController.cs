@@ -37,6 +37,7 @@ public class PlayerController : MonoBehaviour
     // Performs movement and collision so we don't have to think about it
     private CharacterController2D _controller;
     private bool _triggerHasBeenReleased = true;
+    private bool _dashReleased = true;
     // The amount of time a dash takes
     private float _dashTime = 0.25f;
     // How long the player has been dashing for after activating a dash
@@ -68,7 +69,10 @@ public class PlayerController : MonoBehaviour
     private bool _isTakingDamage = false;
     private SpriteRenderer _sprite;
     // This is how long the player has to dash again before they miss the chaining window
-    private float _dashRepeatBuffer = 0.2f;
+    private float _dashRepeatBuffer = 1f;
+    private bool _mustReleaseDash = false;
+    [SerializeField]
+    private float _dashRepeatBufferStartingTime = 1f;
 
     private enum playerState
     {
@@ -89,6 +93,7 @@ public class PlayerController : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        _dashRepeatBuffer = _dashRepeatBufferStartingTime;
         _controller = gameObject.GetComponent<CharacterController2D>();
         _attackCollider.enabled = false;
         _playerDirection = new Vector3(1,0,0);
@@ -103,7 +108,9 @@ public class PlayerController : MonoBehaviour
         bool dash = Input.GetButton("Dash");
         bool melee = Input.GetButton("Melee");
 
-        //Debug.Log(shoot+ "," + aim + "," + dash + "," + melee);
+        if (!dash) _mustReleaseDash = false;
+
+        //Debug.Log(shoot+ "," + aim + "," + dash + "," + melee + "," + _mustReleaseDash);
 
         if (_isTakingDamage)
         {
@@ -133,7 +140,10 @@ public class PlayerController : MonoBehaviour
         if (_currentState == playerState.FREE)
         {
             if (dash && canDash)
+            {
+                _mustReleaseDash = true;
                 _currentState = playerState.DASHING;
+            }
             else if (melee)
                 _currentState = playerState.ATTACKING;
             else if (aim > 0)
@@ -178,11 +188,14 @@ public class PlayerController : MonoBehaviour
         else if (_currentState == playerState.DASHING)
         {
             canDash = false;
+            
             _dashTimer += Time.deltaTime;
-            if ((_dashTimer < _dashTime))
+            if (_dashTimer < _dashTime)
             {
                 _controller.move(_playerDirection * Time.deltaTime * _dashSpeed);
-
+                // HACK: if the player presses dash again while dashing, stop the dash
+                if (dash && !_mustReleaseDash)
+                    _dashTimer = 100f;
                 // No more actions possible while dashing
                 return;
             }
@@ -191,11 +204,11 @@ public class PlayerController : MonoBehaviour
                 if (_dashTime + _dashRepeatBuffer > _dashTimer)
                 {
                     // If the player has tried to dash again and they still have a chance to
-                    if (dash)
+                    if (dash && !_mustReleaseDash)
                     {
                         _dashTimer = 0f;
-                        _dashRepeatBuffer *= 2;
-                        _dashRepeatBuffer /= 3;
+                        if (_dashRepeatBuffer > 0.03f)
+                            _dashRepeatBuffer *= 0.66f;
                         Debug.Log(_dashRepeatBuffer);
                         // HACK: copied and pasted movement code to get it working
                         //  The player is able to change directions before dashing again
@@ -215,6 +228,8 @@ public class PlayerController : MonoBehaviour
 
                         _controller.move(_playerDirection * Time.deltaTime * _dashSpeed);
 
+                        _mustReleaseDash = true;
+
                         // No more actions possible while dashing
                         return;
                     }
@@ -224,7 +239,7 @@ public class PlayerController : MonoBehaviour
                     _currentState = playerState.FREE;
                     _dashTimer = 0f;
                     dashTime = 0;
-                    _dashRepeatBuffer = 0.2f;
+                    _dashRepeatBuffer = _dashRepeatBufferStartingTime;
                 }
             }
         }
