@@ -67,6 +67,8 @@ public class PlayerController : MonoBehaviour
     private float _damageSpeed = 10f;
     private bool _isTakingDamage = false;
     private SpriteRenderer _sprite;
+    // This is how long the player has to dash again before they miss the chaining window
+    private float _dashRepeatBuffer = 0.2f;
 
     private enum playerState
     {
@@ -100,6 +102,8 @@ public class PlayerController : MonoBehaviour
         float aim = Input.GetAxis("Fire2");
         bool dash = Input.GetButton("Dash");
         bool melee = Input.GetButton("Melee");
+
+        //Debug.Log(shoot+ "," + aim + "," + dash + "," + melee);
 
         if (_isTakingDamage)
         {
@@ -173,11 +177,10 @@ public class PlayerController : MonoBehaviour
         }
         else if (_currentState == playerState.DASHING)
         {
-            dashTime = 0;
             canDash = false;
+            _dashTimer += Time.deltaTime;
             if ((_dashTimer < _dashTime))
             {
-                _dashTimer += Time.deltaTime;
                 _controller.move(_playerDirection * Time.deltaTime * _dashSpeed);
 
                 // No more actions possible while dashing
@@ -185,8 +188,44 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                _currentState = playerState.FREE;
-                _dashTimer = 0f;
+                if (_dashTime + _dashRepeatBuffer > _dashTimer)
+                {
+                    // If the player has tried to dash again and they still have a chance to
+                    if (dash)
+                    {
+                        _dashTimer = 0f;
+                        _dashRepeatBuffer *= 2;
+                        _dashRepeatBuffer /= 3;
+                        Debug.Log(_dashRepeatBuffer);
+                        // HACK: copied and pasted movement code to get it working
+                        //  The player is able to change directions before dashing again
+                        Vector3 dir = Vector3.zero;
+
+                        dir.x += Input.GetAxis("Horizontal");
+                        dir.y += Input.GetAxis("Vertical");
+                        dir = Vector3.Normalize(dir);
+                        dir = SnapToNearestMovementAxis(dir);
+
+                        // If the player is changing directions, remember which way they ended up facing
+                        if (dir.x != 0 || dir.y != 0)
+                        {
+                            _playerDirection = dir;
+                        }
+                        // END HACK
+
+                        _controller.move(_playerDirection * Time.deltaTime * _dashSpeed);
+
+                        // No more actions possible while dashing
+                        return;
+                    }
+                }
+                else
+                {
+                    _currentState = playerState.FREE;
+                    _dashTimer = 0f;
+                    dashTime = 0;
+                    _dashRepeatBuffer = 0.2f;
+                }
             }
         }
 
