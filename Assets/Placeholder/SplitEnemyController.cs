@@ -18,6 +18,8 @@ public class SplitEnemyController : MonoBehaviour {
     private float _warpLocationUpY = 7f;
     [SerializeField]
     private float _warpLocationDownY = -7f;
+    [SerializeField]
+    private float _viewRange = 5f;
     private float _damageTime = 0.5f;
     private float _damageTimer = 0;
     private GameObject _player;
@@ -30,6 +32,10 @@ public class SplitEnemyController : MonoBehaviour {
     private GameObject _smallerGuys;
     [SerializeField]
     private GameObject _ammoDrop;
+    private bool _patrolOutgoing = true;
+    private float _patrolTime = 2f;
+    private float _patrolWaitTime = 2f;
+    private float _patrolTimer = 0;
 
     // Use this for initialization
     void Start () {
@@ -54,9 +60,30 @@ public class SplitEnemyController : MonoBehaviour {
         }
         else
         {
-            Vector3 movementDirection = Vector3.Normalize(_player.transform.position - gameObject.transform.position);
-            //gameObject.transform.position += movementDirection * Time.deltaTime * _speed;
-            _controller.move(movementDirection * Time.deltaTime * _speed);
+            Vector3 distanceToPlayer = _player.transform.position - gameObject.transform.position;
+            if (distanceToPlayer.magnitude < _viewRange)
+            {
+                Vector3 movementDirection = Vector3.Normalize(distanceToPlayer);
+                //gameObject.transform.position += movementDirection * Time.deltaTime * _speed;
+                _controller.move(movementDirection * Time.deltaTime * _speed);
+            }
+            else
+            {
+                Vector3 patrolDir = new Vector3(1, 0, 0);
+                _patrolTimer += Time.deltaTime;
+                if (_patrolTimer < _patrolTime)
+                {
+                    if (_patrolOutgoing)
+                        _controller.move(patrolDir * Time.deltaTime * _speed / 2f);
+                    else
+                        _controller.move(-1 * patrolDir * Time.deltaTime * _speed / 2f);
+                }
+                else if (_patrolTimer >= _patrolTime + _patrolWaitTime)
+                {
+                    _patrolOutgoing = !_patrolOutgoing;
+                    _patrolTimer = 0;
+                }
+            }
         }
     }
 
@@ -91,19 +118,22 @@ public class SplitEnemyController : MonoBehaviour {
             _takingDamage = true;
         }
 
-        if (_health <= 0)
+        if (_takingDamage)
         {
             if (_smallerGuys != null)
             {
-                for (int i = 0; i < 3; ++i)
-                {
-                    Vector3 position = new Vector3(Random.Range(-10.0f, 10.0f), Random.Range(-10.0f, 10.0f), 0);
-                    Debug.Log(position);
-                    position = Vector3.Normalize(position);
-                    position *= 2;
-                    Instantiate(_smallerGuys, gameObject.transform.position + position, Quaternion.identity);
-                }
+                if (_health > 1)
+                    gameObject.transform.localScale = new Vector3(gameObject.transform.localScale.x*4/5, gameObject.transform.localScale.y * 4 / 5, 1);
+                Vector3 position = new Vector3(Random.Range(-10.0f, 10.0f), Random.Range(-10.0f, 10.0f), 0);
+                Debug.Log(position);
+                position = Vector3.Normalize(position);
+                position *= 2;
+                Instantiate(_smallerGuys, gameObject.transform.position + position, Quaternion.identity);
             }
+        }
+
+        if (_health <= 0)
+        {
             Vector3 t = gameObject.transform.position;
             Destroy(gameObject);
             // ammo drop is 25%
