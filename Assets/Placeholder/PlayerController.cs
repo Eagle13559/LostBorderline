@@ -279,14 +279,21 @@ public class PlayerController : MonoBehaviour
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
-        else if (other.tag == "Bullet")
+        else if (other.tag == "PlayerBullet")
         {
             Destroy(other.gameObject);
             _playerHealth -= bulletDamage;
             _isTakingDamage = true;
             if (_playerHealth <= 0)
                 _currentState = playerState.DEAD;
-
+        }
+        else if (other.tag == "EnemyBullet")
+        {
+            Destroy(other.gameObject);
+            _playerHealth -= bulletDamage;
+            _isTakingDamage = true;
+            if (_playerHealth <= 0)
+                _currentState = playerState.DEAD;
         }
         else if (other.tag == "Enemy")
         {

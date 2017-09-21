@@ -80,8 +80,6 @@ public class LevelController : MonoBehaviour {
                 }
                 break;
 
-        }
-
-		
+        }	
 	}
 }
