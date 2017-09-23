@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
+    private const float SCREENWIDTH = 32f;
+    private const float SCREENHEIGHT = 18f;
     [SerializeField]
     private GameObject _upper;
     [SerializeField]
@@ -243,40 +245,36 @@ public class PlayerController : MonoBehaviour
         {
             canDash = false;
             dashTime += Time.deltaTime;
-            DrawDashBar(dashTime, _camera.transform.position.y + 4.3);
+            DrawDashBar(dashTime, SCREENHEIGHT/2 - 0.6f);
         }
         else if (dashTime > 2f)
         {
             canDash = true;
-            DrawDashBar(dashTime, _camera.transform.position.y + 4.3);
+            DrawDashBar(dashTime, SCREENHEIGHT/2 - 0.6f);
         }
-        DrawHealthBar(_camera.transform.position.y + 4);
-        DrawAmmoBar(_camera.transform.position.y + 4.6);
+        DrawHealthBar(SCREENHEIGHT/2 - 0.2f);
+        DrawAmmoBar(SCREENHEIGHT/2 - 0.4f);
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.tag == "LevelWrapperR")
         {
-            //gameObject.transform.position = new Vector3(_warpLocationLeftX, gameObject.transform.position.y);
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperL")
         {
-            //gameObject.transform.position = new Vector3(_warpLocationRightX, gameObject.transform.position.y);
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperD")
         {
-            //gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationUpY);
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperU")
         {
-            //gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationDownY);
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
@@ -312,19 +310,9 @@ public class PlayerController : MonoBehaviour
         }
         else if (other.tag == "Door")
         {
-            //Destroy(other.gameObject);
             int scene = SceneManager.GetActiveScene().buildIndex;
             scene++;
             SceneManager.LoadScene(scene);
-
-            //_camera.transform.position = new Vector3(_camera.transform.position.x, _camera.transform.position.y + 10, _camera.transform.position.z);
-            //_upper.transform.position = new Vector3(_upper.transform.position.x, _upper.transform.position.y + 10, _upper.transform.position.z);
-            //_lower.transform.position = new Vector3(_lower.transform.position.x, _lower.transform.position.y + 10, _lower.transform.position.z);
-            //_left.transform.position = new Vector3(_left.transform.position.x, _left.transform.position.y + 10, _left.transform.position.z);
-            //_right.transform.position = new Vector3(_right.transform.position.x, _right.transform.position.y + 10, _right.transform.position.z);
-            //_warpLocationUpY += 10;
-            //_warpLocationDownY += 10;
-
         }
     }
 
@@ -371,7 +359,8 @@ public class PlayerController : MonoBehaviour
 
     void DrawHealthBar(double y)
     {
-        Vector3 healthBarStart = new Vector3(-8, (float)y, 0);
+        float barLocX = SCREENWIDTH / 2 * -1 + 0.2f;
+        Vector3 healthBarStart = new Vector3(barLocX, (float)y, 0);
         int healthBarLength = 5;
         Vector3 healthBarEnd = new Vector3(healthBarStart.x + healthBarLength * _playerHealth / 100f, healthBarStart.y, healthBarStart.z);
         DrawLine(healthBarStart, healthBarEnd, Color.red);
@@ -379,7 +368,8 @@ public class PlayerController : MonoBehaviour
 
     void DrawDashBar(float length, double y)
     {
-        Vector3 DashBarStart = new Vector3(-8, (float)y, 0);
+        float barLocX = SCREENWIDTH / 2 * -1 + 0.2f;
+        Vector3 DashBarStart = new Vector3(barLocX, (float)y, 0);
         float DashBarLength = length;
         Vector3 DashBarEnd = new Vector3(DashBarStart.x + (length), DashBarStart.y, DashBarStart.z);
         DrawLine(DashBarStart, DashBarEnd, Color.cyan);
@@ -387,7 +377,8 @@ public class PlayerController : MonoBehaviour
 
     void DrawAmmoBar(double y)
     {
-        Vector3 ammoBarStart = new Vector3(-8, (float)y, 0);
+        float barLocX = SCREENWIDTH / 2 * -1 + 0.2f;
+        Vector3 ammoBarStart = new Vector3(barLocX, (float)y, 0);
         int ammoBarLength = 5;
         Vector3 ammoBarEnd = new Vector3(ammoBarStart.x + ammoBarLength * _ammo / 100f, ammoBarStart.y, ammoBarStart.z);
         DrawLine(ammoBarStart, ammoBarEnd, Color.green);
