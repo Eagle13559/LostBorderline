@@ -40,21 +40,5 @@ public class BulletController : MonoBehaviour {
         {
             Destroy(gameObject);
         }
-        else if (other.tag == "LevelWrapperR")
-        {
-            gameObject.transform.position = new Vector3(_warpLocationLeftX, gameObject.transform.position.y);
-        }
-        else if (other.tag == "LevelWrapperL")
-        {
-            gameObject.transform.position = new Vector3(_warpLocationRightX, gameObject.transform.position.y);
-        }
-        else if (other.tag == "LevelWrapperD")
-        {
-            gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationUpY);
-        }
-        else if (other.tag == "LevelWrapperU")
-        {
-            gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationDownY);
-        }
     }
 }

@@ -257,25 +257,25 @@ public class PlayerController : MonoBehaviour
     {
         if (other.tag == "LevelWrapperR")
         {
-            gameObject.transform.position = new Vector3(_warpLocationLeftX, gameObject.transform.position.y);
+            //gameObject.transform.position = new Vector3(_warpLocationLeftX, gameObject.transform.position.y);
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperL")
         {
-            gameObject.transform.position = new Vector3(_warpLocationRightX, gameObject.transform.position.y);
+            //gameObject.transform.position = new Vector3(_warpLocationRightX, gameObject.transform.position.y);
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperD")
         {
-            gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationUpY);
+            //gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationUpY);
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperU")
         {
-            gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationDownY);
+            //gameObject.transform.position = new Vector3(gameObject.transform.position.x, _warpLocationDownY);
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
