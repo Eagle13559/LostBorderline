@@ -8,6 +8,7 @@ public class levelWrapperScript : MonoBehaviour {
     private bool _moveLeftRight = false;
     [SerializeField]
     private float _offsetDistance;
+    public bool _on = true;
 
 	// Use this for initialization
 	void Start () {
