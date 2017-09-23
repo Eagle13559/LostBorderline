@@ -29,7 +29,7 @@ public class LevelController : MonoBehaviour {
                     {
                         _door.transform.localScale = new Vector3(3, .7f, 0);
                         Instantiate(_door, new Vector3(0, 5, 0), Quaternion.identity);
-                        lvlCount++;
+                        //lvlCount++;
                         break;
                     }
 

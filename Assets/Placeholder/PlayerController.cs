@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Prime31;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -311,15 +312,18 @@ public class PlayerController : MonoBehaviour
         }
         else if (other.tag == "Door")
         {
-            Destroy(other.gameObject);
+            //Destroy(other.gameObject);
+            int scene = SceneManager.GetActiveScene().buildIndex;
+            scene++;
+            SceneManager.LoadScene(scene);
 
-            _camera.transform.position = new Vector3(_camera.transform.position.x, _camera.transform.position.y + 10, _camera.transform.position.z);
-            _upper.transform.position = new Vector3(_upper.transform.position.x, _upper.transform.position.y + 10, _upper.transform.position.z);
-            _lower.transform.position = new Vector3(_lower.transform.position.x, _lower.transform.position.y + 10, _lower.transform.position.z);
-            _left.transform.position = new Vector3(_left.transform.position.x, _left.transform.position.y + 10, _left.transform.position.z);
-            _right.transform.position = new Vector3(_right.transform.position.x, _right.transform.position.y + 10, _right.transform.position.z);
-            _warpLocationUpY += 10;
-            _warpLocationDownY += 10;
+            //_camera.transform.position = new Vector3(_camera.transform.position.x, _camera.transform.position.y + 10, _camera.transform.position.z);
+            //_upper.transform.position = new Vector3(_upper.transform.position.x, _upper.transform.position.y + 10, _upper.transform.position.z);
+            //_lower.transform.position = new Vector3(_lower.transform.position.x, _lower.transform.position.y + 10, _lower.transform.position.z);
+            //_left.transform.position = new Vector3(_left.transform.position.x, _left.transform.position.y + 10, _left.transform.position.z);
+            //_right.transform.position = new Vector3(_right.transform.position.x, _right.transform.position.y + 10, _right.transform.position.z);
+            //_warpLocationUpY += 10;
+            //_warpLocationDownY += 10;
 
         }
     }
