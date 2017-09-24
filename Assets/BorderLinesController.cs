@@ -40,16 +40,18 @@ public class BorderLinesController : MonoBehaviour {
             if (clockwise)
             {
                 _mustReleaseRBumper = true;
-                for (int i = 0; i < 4; ++i)
-                    newStates[i] = _states[(i + 1) % 4];
+                newStates[0] = _states[3];
+                for (int i = 1; i < 4; ++i)
+                    newStates[i] = _states[i - 1];
+                
                 // Debug.Log("clock");
             }
             else if (counterclockwise)
             {
                 _mustReleaseLBumper = true;
-                newStates[0] = _states[3];
-                for (int i = 1; i < 4; ++i)
-                    newStates[i] = _states[i - 1];
+                for (int i = 0; i < 4; ++i)
+                    newStates[i] = _states[(i + 1) % 4];
+
                 // Debug.Log("coun");
             }
 
