@@ -6,6 +6,8 @@ public class BorderLinesController : MonoBehaviour {
 
     private List<levelWrapperScript> _borderLines;
     private List<bool> _states;
+    private bool _mustReleaseLBumper = false;
+    private bool _mustReleaseRBumper = false;
 
     // Use this for initialization
     void Start () {
@@ -27,17 +29,24 @@ public class BorderLinesController : MonoBehaviour {
         bool clockwise = Input.GetButton("RotateBorderLinesClock");
         bool counterclockwise = Input.GetButton("RotateBorderLinesCoun");
 
-        if (clockwise || counterclockwise)
+        if (!clockwise)
+            _mustReleaseRBumper = false;
+        if (!counterclockwise)
+            _mustReleaseLBumper = false;
+
+        if ((clockwise && !_mustReleaseRBumper) || (counterclockwise && !_mustReleaseLBumper))
         {
             bool[] newStates = new bool[4];
             if (clockwise)
             {
+                _mustReleaseRBumper = true;
                 for (int i = 0; i < 4; ++i)
                     newStates[i] = _states[(i + 1) % 4];
                 // Debug.Log("clock");
             }
             else if (counterclockwise)
             {
+                _mustReleaseLBumper = true;
                 newStates[0] = _states[3];
                 for (int i = 1; i < 4; ++i)
                     newStates[i] = _states[i - 1];
@@ -49,7 +58,7 @@ public class BorderLinesController : MonoBehaviour {
                 _states[i] = newStates[i];
                 _borderLines[i].setOnOrOff(_states[i]);
             }
-            Debug.Log(_states[0] + ", " + _states[1] + ", " + _states[2] + ", " + _states[3]);
+            //Debug.Log(_states[0] + ", " + _states[1] + ", " + _states[2] + ", " + _states[3]);
         }
     }
 }
