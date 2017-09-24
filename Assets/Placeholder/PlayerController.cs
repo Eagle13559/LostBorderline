@@ -9,14 +9,6 @@ public class PlayerController : MonoBehaviour
     private const float SCREENWIDTH = 32f;
     private const float SCREENHEIGHT = 18f;
     [SerializeField]
-    private GameObject _upper;
-    [SerializeField]
-    private GameObject _lower;
-    [SerializeField]
-    private GameObject _left;
-    [SerializeField]
-    private GameObject _right;
-    [SerializeField]
     private GameObject _camera;
     public int damage = 1;
     // Use so the player can hoild down dash button.
@@ -80,6 +72,11 @@ public class PlayerController : MonoBehaviour
     private float _damageSpeed = 10f;
     private bool _isTakingDamage = false;
     private SpriteRenderer _sprite;
+    private bool _dashReleased = true;
+    private float _dashRepeatBuffer = 1f;
+    private bool _mustReleaseDash = false;
+    [SerializeField]
+    private float _dashRepeatBufferStartingTime = 1f;
 
     private enum playerState
     {
@@ -100,6 +97,7 @@ public class PlayerController : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        _dashRepeatBuffer = _dashRepeatBufferStartingTime;
         _controller = gameObject.GetComponent<CharacterController2D>();
         _attackCollider.enabled = false;
         _playerDirection = new Vector3(1, 0, 0);
@@ -113,6 +111,8 @@ public class PlayerController : MonoBehaviour
         float aim = Input.GetAxis("Fire2");
         bool dash = Input.GetButton("Dash");
         bool melee = Input.GetButton("Melee");
+
+        if (!dash) _mustReleaseDash = false;
 
         if (_isTakingDamage)
         {
@@ -142,7 +142,10 @@ public class PlayerController : MonoBehaviour
         if (_currentState == playerState.FREE)
         {
             if (dash && canDash)
+            {
+                _mustReleaseDash = true;
                 _currentState = playerState.DASHING;
+            }
             else if (melee)
                 _currentState = playerState.ATTACKING;
             else if (aim > 0)
@@ -188,18 +191,62 @@ public class PlayerController : MonoBehaviour
         {
             dashTime = 0;
             canDash = false;
-            if ((_dashTimer < _dashTime))
+            _dashTimer += Time.deltaTime;
+            if (_dashTimer < _dashTime)
             {
-                _dashTimer += Time.deltaTime;
                 _controller.move(_playerDirection * Time.deltaTime * _dashSpeed);
+                // HACK: if the player presses dash again while dashing, stop the dash
+                if (dash && !_mustReleaseDash)
+                    _dashTimer = 100f;
 
                 // No more actions possible while dashing
                 return;
             }
             else
             {
-                _currentState = playerState.FREE;
-                _dashTimer = 0f;
+                if (_dashTime + _dashRepeatBuffer > _dashTimer)
+                {
+                    // If the player has tried to dash again and they still have a chance to
+                    if (dash && !_mustReleaseDash)
+                    {
+                        _dashTimer = 0f;
+                        if (_dashRepeatBuffer > 0.03f)
+                            _dashRepeatBuffer *= 0.66f;
+                        _dashRepeatBuffer *= 2;
+                        _dashRepeatBuffer /= 3;
+                        Debug.Log(_dashRepeatBuffer);
+                        // HACK: copied and pasted movement code to get it working
+                        //  The player is able to change directions before dashing again
+                        Vector3 dir = Vector3.zero;
+
+                        dir.x += Input.GetAxis("Horizontal");
+                        dir.y += Input.GetAxis("Vertical");
+                        dir = Vector3.Normalize(dir);
+                        dir = SnapToNearestMovementAxis(dir);
+
+                        // If the player is changing directions, remember which way they ended up facing
+                        if (dir.x != 0 || dir.y != 0)
+                        {
+                            _playerDirection = dir;
+                        }
+                        // END HACK
+
+                        _controller.move(_playerDirection * Time.deltaTime * _dashSpeed);
+
+                        _mustReleaseDash = true;
+
+                        // No more actions possible while dashing
+                        return;
+                    }
+                }
+                else
+                {
+                    _currentState = playerState.FREE;
+                    _dashTimer = 0f;
+                    dashTime = 0;
+                    _dashRepeatBuffer = 0.2f;
+                    _dashRepeatBuffer = _dashRepeatBufferStartingTime;
+                }
             }
         }
 
@@ -208,6 +255,7 @@ public class PlayerController : MonoBehaviour
         playerInputDirection.x += Input.GetAxis("Horizontal");
         playerInputDirection.y += Input.GetAxis("Vertical");
         playerInputDirection = Vector3.Normalize(playerInputDirection);
+        //Debug.Log(playerInputDirection.x + ", " + playerInputDirection.y);
 
         // Shooting
         if (shoot > 0 && _triggerHasBeenReleased && _ammo > 0)
@@ -245,15 +293,15 @@ public class PlayerController : MonoBehaviour
         {
             canDash = false;
             dashTime += Time.deltaTime;
-            DrawDashBar(dashTime, SCREENHEIGHT/2 - 0.6f);
+            DrawDashBar(dashTime, SCREENHEIGHT / 2 - 0.6f);
         }
         else if (dashTime > 2f)
         {
             canDash = true;
-            DrawDashBar(dashTime, SCREENHEIGHT/2 - 0.6f);
+            DrawDashBar(dashTime, SCREENHEIGHT / 2 - 0.6f);
         }
-        DrawHealthBar(SCREENHEIGHT/2 - 0.2f);
-        DrawAmmoBar(SCREENHEIGHT/2 - 0.4f);
+        DrawHealthBar(SCREENHEIGHT / 2 - 0.2f);
+        DrawAmmoBar(SCREENHEIGHT / 2 - 0.4f);
     }
 
     void OnTriggerEnter2D(Collider2D other)

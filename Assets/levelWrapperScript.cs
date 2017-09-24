@@ -28,4 +28,9 @@ public class levelWrapperScript : MonoBehaviour {
         else
             collision.gameObject.transform.position = new Vector3(otherPosition.x, otherPosition.y + _offsetDistance, 1);
     }
+    public void setOnOrOff(bool newState_)
+    {
+        // TODO: turn on and off animation here
+        _on = newState_;
+    }
 }
