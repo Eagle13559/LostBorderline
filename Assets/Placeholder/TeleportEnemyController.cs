@@ -20,7 +20,7 @@ public class TeleportEnemyController : MonoBehaviour
     [SerializeField]
     private float _warpLocationDownY = -7f;
     [SerializeField]
-    private float _safeDistance = 2f;
+    private float _safeDistance = 2.2f;
     private float _damageTime = 0.5f;
     private float _damageTimer = 0;
     private GameObject _player;
@@ -37,6 +37,9 @@ public class TeleportEnemyController : MonoBehaviour
     private GameObject _bullet;
     private Vector3[] teleportLocations;
     private int currentLocation;
+    private bool _panicked = false;
+    private float _teleportWindow = 0;
+    private float _teleportTime = 0.2f;
 
     // Use this for initialization
     void Start()
@@ -73,7 +76,7 @@ public class TeleportEnemyController : MonoBehaviour
             Vector3 movementDirection = Vector3.Normalize(distanceToPlayer);
             if (distanceToPlayer.magnitude < _safeDistance)
             {
-                Teleport();
+                _panicked = true;
             }
             else
             {
@@ -85,6 +88,12 @@ public class TeleportEnemyController : MonoBehaviour
                     _shootTimer = 0;
                 }
             }
+        }
+        if (_panicked)
+        {
+            _teleportWindow += Time.deltaTime;
+            if (_teleportWindow > _teleportTime)
+                Teleport();
         }
     }
 
@@ -125,5 +134,7 @@ public class TeleportEnemyController : MonoBehaviour
         currentLocation++;
         currentLocation %= 4;
         transform.position = teleportLocations[currentLocation];
+        _panicked = false;
+        _teleportWindow = 0f;
     }
 }
