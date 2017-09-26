@@ -7,6 +7,7 @@ public class LevelController : MonoBehaviour {
     private BoxCollider2D _doorCollider;
     private SpriteRenderer _doorRenderer;
     private bool _playerFinished = false;
+    private GameObject _sceneSwitch;
 
 	// Use this for initialization
 	void Start () {
@@ -15,6 +16,7 @@ public class LevelController : MonoBehaviour {
         _doorRenderer = _door.gameObject.GetComponent<SpriteRenderer>();
         _doorCollider.enabled = false;
         _doorRenderer.enabled = false;
+        _sceneSwitch = GameObject.Find("Switch");
     }
 
     // Update is called once per frame
@@ -28,9 +30,12 @@ public class LevelController : MonoBehaviour {
                 {
                     if (GameObject.Find("TeleportEnemy") == null)
                     {
-                        _doorCollider.enabled = true;
-                        _doorRenderer.enabled = true;
-                        _playerFinished = true;
+                        if (_sceneSwitch == null || _sceneSwitch.GetComponent<SwitchController>().state)
+                        {
+                            _doorCollider.enabled = true;
+                            _doorRenderer.enabled = true;
+                            _playerFinished = true;
+                        }
                     }
                 }
 
