@@ -97,6 +97,7 @@ public class TeleportEnemyController : MonoBehaviour
         }
     }
 
+
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.tag == "PlayerBullet")
@@ -105,10 +106,19 @@ public class TeleportEnemyController : MonoBehaviour
             _health -= _playerController.bulletDamage;
             _takingDamage = true;
         }
+
+        if(other.tag=="Wall")
+        {
+            _takingDamage = true;
+        }
         else if (other.tag == "PlayerSword")
         {
             _health -= _playerController.damage;
             _takingDamage = true;
+        }
+        else if(other.tag == "Wall")
+        {
+            Teleport(); 
         }
 
         if (_takingDamage)
