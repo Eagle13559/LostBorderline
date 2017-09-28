@@ -5,6 +5,8 @@ using Prime31;
 
 public class SplitEnemyController : MonoBehaviour {
 
+    private const float SCREENWIDTH = 32f;
+    private const float SCREENHEIGHT = 18f;
     [SerializeField]
     private int _health = 5;
     [SerializeField]
@@ -73,9 +75,9 @@ public class SplitEnemyController : MonoBehaviour {
                 _patrolTimer += Time.deltaTime;
                 if (_patrolTimer < _patrolTime)
                 {
-                    if (_patrolOutgoing)
+                    if (_patrolOutgoing && gameObject.transform.position.x < SCREENWIDTH / 2.0f)
                         _controller.move(patrolDir * Time.deltaTime * _speed / 2f);
-                    else
+                    else if (gameObject.transform.position.x > -1 * SCREENWIDTH / 2.0f)
                         _controller.move(-1 * patrolDir * Time.deltaTime * _speed / 2f);
                 }
                 else if (_patrolTimer >= _patrolTime + _patrolWaitTime)
