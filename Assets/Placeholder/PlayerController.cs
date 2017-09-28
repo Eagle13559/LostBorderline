@@ -9,6 +9,10 @@ public class PlayerController : MonoBehaviour
     private const float SCREENWIDTH = 32f;
     private const float SCREENHEIGHT = 18f;
     [SerializeField]
+    private AudioSource teleSound;
+    [SerializeField]
+    private AudioSource shootSound;
+    [SerializeField]
     private GameObject _camera;
     public int damage = 1;
     // Use so the player can hoild down dash button.
@@ -113,7 +117,7 @@ public class PlayerController : MonoBehaviour
         float aim = Input.GetAxis("Fire2");
         bool dash = Input.GetButton("Dash");
         bool melee = Input.GetButton("Melee");
-
+        
         if (!dash) _mustReleaseDash = false;
 
         if (_isTakingDamage)
@@ -261,6 +265,7 @@ public class PlayerController : MonoBehaviour
         // Shooting
         if (shoot > 0 && _triggerHasBeenReleased && _ammo > 0)
         {
+            shootSound.Play();
             _ammo--;
             _triggerHasBeenReleased = false;
             GameObject bullet = Instantiate(_bullet, gameObject.transform.position + _playerDirection, Quaternion.identity);
@@ -299,36 +304,40 @@ public class PlayerController : MonoBehaviour
         {
             canDash = false;
             dashTime += Time.deltaTime;
-            DrawDashBar(dashTime, SCREENHEIGHT / 2 - 0.6f);
+            //DrawDashBar(dashTime, SCREENHEIGHT / 2 - 0.6f);
         }
         else if (dashTime > _dashCoolDownTime)
         {
             canDash = true;
-            DrawDashBar(dashTime, SCREENHEIGHT / 2 - 0.6f);
+            //DrawDashBar(dashTime, SCREENHEIGHT / 2 - 0.6f);
         }
-        DrawHealthBar(SCREENHEIGHT / 2 - 0.2f);
-        DrawAmmoBar(SCREENHEIGHT / 2 - 0.4f);
+        //DrawHealthBar(SCREENHEIGHT / 2 - 0.2f);
+        //DrawAmmoBar(SCREENHEIGHT / 2 - 0.4f);
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.tag == "LevelWrapperR")
         {
+            teleSound.Play();
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperL")
         {
+            teleSound.Play();
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperD")
         {
+            teleSound.Play();
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperU")
         {
+            teleSound.Play();
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
@@ -345,8 +354,10 @@ public class PlayerController : MonoBehaviour
             Destroy(other.gameObject);
             _playerHealth -= bulletDamage;
             _isTakingDamage = true;
-            if (_playerHealth <= 0)
-                _currentState = playerState.DEAD;
+            if (_playerHealth <= 0) {
+                //_currentState = playerState.DEAD;
+            }
+
         }
         else if (other.tag == "Enemy")
         {
