@@ -301,7 +301,7 @@ public class PlayerController : MonoBehaviour
             dashTime += Time.deltaTime;
             DrawDashBar(dashTime, SCREENHEIGHT / 2 - 0.6f);
         }
-        else if (dashTime > 2f)
+        else if (dashTime > _dashCoolDownTime)
         {
             canDash = true;
             DrawDashBar(dashTime, SCREENHEIGHT / 2 - 0.6f);
