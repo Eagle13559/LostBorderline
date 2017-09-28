@@ -14,12 +14,18 @@ public class levelWrapperScript : MonoBehaviour {
     private GameObject _player;
     private const float SCREENWIDTH = 32f;
     private const float SCREENHEIGHT = 18f;
+    private SpriteRenderer _renderer;
 
     // Use this for initialization
     void Start () {
         _barrier.SetActive(!_on);
         _player = GameObject.Find("Player");
-	}
+        _renderer = gameObject.GetComponent<SpriteRenderer>();
+        if (_on)
+            _renderer.color = Color.green;
+        else
+            _renderer.color = Color.red;
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -29,7 +35,6 @@ public class levelWrapperScript : MonoBehaviour {
              _barrier.SetActive(false);
         else
             _barrier.SetActive(!_on);
-
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -45,7 +50,12 @@ public class levelWrapperScript : MonoBehaviour {
     public void setOnOrOff(bool newState_)
     {
         // TODO: turn on and off animation here
+        
         _on = newState_;
         _barrier.SetActive(!_on);
+        if (_on)
+            _renderer.color = Color.green;
+        else
+            _renderer.color = Color.red;
     }
 }
