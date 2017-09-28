@@ -78,6 +78,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float _dashRepeatBufferStartingTime = 1f;
 
+    private Animator _animator;
+
     private enum playerState
     {
         TAKINGDAMAGE,
@@ -102,6 +104,7 @@ public class PlayerController : MonoBehaviour
         _attackCollider.enabled = false;
         _playerDirection = new Vector3(1, 0, 0);
         _sprite = gameObject.GetComponent<SpriteRenderer>();
+        _animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -174,6 +177,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (_currentState == playerState.ATTACKING)
         {
+            _animator.SetTrigger("playerSlash");
             if (_attackTimer < _attackTime)
             {
                 _attackTimer += Time.deltaTime;
