@@ -77,6 +77,8 @@ public class PlayerController : MonoBehaviour
     private bool _mustReleaseDash = false;
     [SerializeField]
     private float _dashRepeatBufferStartingTime = 1f;
+    [SerializeField]
+    private float _dashCoolDownTime = 2f;
 
     private enum playerState
     {
@@ -244,7 +246,6 @@ public class PlayerController : MonoBehaviour
                     _currentState = playerState.FREE;
                     _dashTimer = 0f;
                     dashTime = 0;
-                    _dashRepeatBuffer = 0.2f;
                     _dashRepeatBuffer = _dashRepeatBufferStartingTime;
                 }
             }
@@ -294,7 +295,7 @@ public class PlayerController : MonoBehaviour
         else if (_currentState == playerState.CHARGEDMELEE)
             DrawLine(new Vector3(gameObject.transform.position.x - 0.2f, gameObject.transform.position.y - 0.2f, gameObject.transform.position.z), new Vector3(gameObject.transform.position.x - 0.2f, gameObject.transform.position.y - 0.2f, gameObject.transform.position.z) + playerInputDirection*2, Color.blue, 0.05f);
 
-        if (dashTime < 2f)
+        if (dashTime < _dashCoolDownTime)
         {
             canDash = false;
             dashTime += Time.deltaTime;
