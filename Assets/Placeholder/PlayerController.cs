@@ -289,6 +289,11 @@ public class PlayerController : MonoBehaviour
         else
             DrawLine(gameObject.transform.position, gameObject.transform.position + playerInputDirection, Color.red, 0.05f);
 
+        if (_currentState == playerState.ATTACKING)
+            DrawLine(new Vector3(gameObject.transform.position.x-0.2f, gameObject.transform.position.y - 0.2f, gameObject.transform.position.z), new Vector3(gameObject.transform.position.x - 0.2f, gameObject.transform.position.y - 0.2f, gameObject.transform.position.z) + playerInputDirection, Color.blue, 0.05f);
+        else if (_currentState == playerState.CHARGEDMELEE)
+            DrawLine(new Vector3(gameObject.transform.position.x - 0.2f, gameObject.transform.position.y - 0.2f, gameObject.transform.position.z), new Vector3(gameObject.transform.position.x - 0.2f, gameObject.transform.position.y - 0.2f, gameObject.transform.position.z) + playerInputDirection*2, Color.blue, 0.05f);
+
         if (dashTime < 2f)
         {
             canDash = false;
