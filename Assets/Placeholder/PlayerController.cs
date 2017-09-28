@@ -8,10 +8,7 @@ public class PlayerController : MonoBehaviour
 {
     private const float SCREENWIDTH = 32f;
     private const float SCREENHEIGHT = 18f;
-    [SerializeField]
-    private AudioSource teleSound;
-    [SerializeField]
-    private AudioSource shootSound;
+    
     [SerializeField]
     private GameObject _camera;
     public int damage = 1;
@@ -265,7 +262,7 @@ public class PlayerController : MonoBehaviour
         // Shooting
         if (shoot > 0 && _triggerHasBeenReleased && _ammo > 0)
         {
-            shootSound.Play();
+          
             _ammo--;
             _triggerHasBeenReleased = false;
             GameObject bullet = Instantiate(_bullet, gameObject.transform.position + _playerDirection, Quaternion.identity);
@@ -319,25 +316,25 @@ public class PlayerController : MonoBehaviour
     {
         if (other.tag == "LevelWrapperR")
         {
-            teleSound.Play();
+           
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperL")
         {
-            teleSound.Play();
+          
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperD")
         {
-            teleSound.Play();
+           
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
         else if (other.tag == "LevelWrapperU")
         {
-            teleSound.Play();
+           
             _ammo += 5;
             if (_ammo > 100) _ammo = 100;
         }
