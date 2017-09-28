@@ -49,11 +49,14 @@ public class TeleportEnemyController : MonoBehaviour
         _playerController = _player.GetComponent<PlayerController>();
         _sprite = gameObject.GetComponent<SpriteRenderer>();
         currentLocation = 0;
-        teleportLocations = new Vector3[4];
-        teleportLocations[0] = new Vector3(7, -3, 0);
-        teleportLocations[1] = new Vector3(5, 3, 0);
-        teleportLocations[2] = new Vector3(0, 4, 0);
-        teleportLocations[3] = new Vector3(-6,-4, 0);
+        teleportLocations = new Vector3[7];
+        teleportLocations[0] = new Vector3(-2.7f, -0.44f, 0);
+        teleportLocations[1] = new Vector3(1.49f, -.056f, 0);
+        teleportLocations[2] = new Vector3(-10.7f, 5.0f, 0);
+        teleportLocations[3] = new Vector3(-0.7f, 4.0f, 0);
+        teleportLocations[4] = new Vector3(13.3f, 3.3f, 0);
+        teleportLocations[5] = new Vector3(11.6f, -1.75f, 0);
+        teleportLocations[6] = new Vector3(-14.7f, -3.0f, 0);
     }
 
     // Update is called once per frame
@@ -142,8 +145,9 @@ public class TeleportEnemyController : MonoBehaviour
     void Teleport()
     {
         currentLocation++;
-        currentLocation %= 4;
-        transform.position = teleportLocations[currentLocation];
+        int newLoc = Random.Range(0, 8);
+        if (newLoc == currentLocation) newLoc++;
+        transform.position = teleportLocations[newLoc];
         _panicked = false;
         _teleportWindow = 0f;
     }
